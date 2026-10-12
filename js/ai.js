@@ -122,7 +122,7 @@
 
     // -------- 3) Use an ability --------
     for (const u of P.front.concat(P.back)) {
-      if (!u || u.slept || u.skillUsed || u.exhausted) continue;
+      if (!u || u.slept || u.silenced || u.skillUsed || u.exhausted) continue;
       const s = u.skill;
       if (!s || (s.type !== 'Active' && s.type !== 'Manual')) continue;
       if (s.type === 'Active' && P.dp < (s.cost || 0)) continue;

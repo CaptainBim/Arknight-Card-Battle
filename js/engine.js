@@ -294,7 +294,7 @@
 
     // end of turn autos (operators on the board + field arts)
     boardUnits(P).forEach(u => {
-      if (u.slept) return;
+      if (u.slept || u.silenced) return;   // asleep / silenced operators cannot act
       if (u.skill && u.skill.type === 'Auto') resolveEffects(u.skill.effects, u, null);
     });
     P.arts.forEach(b => {
@@ -305,6 +305,9 @@
 
     // countdown on field arts (they live in the support zone, not on the board)
     P.arts.slice().forEach(b => {
+      // The turn a Field Art is cast does not count toward its duration, so a
+      // "lasts 3 turns" art resolves 3 times instead of 2.
+      if (b.sourceTurn === state.turn) return;
       if (b.duration > 0) {
         b.duration -= 1;
         if (b.duration <= 0) {
@@ -419,6 +422,8 @@
     if (!unit || !unit.skill) return fail('No ability.');
     const t = unit.skill.type;
     if (t !== 'Active' && t !== 'Manual') return fail('This ability cannot be activated.');
+    if (unit.slept) return fail(unit.name + ' is asleep and cannot use abilities.');
+    if (unit.silenced) return fail(unit.name + ' is silenced and cannot use abilities.');
     if (unit.skillUsed) return fail('Ability already used this turn.');
     if (unit.exhausted) return fail('This operator already acted this turn.');
     // On the turn it is deployed, only a DP-granting ability may be used.
