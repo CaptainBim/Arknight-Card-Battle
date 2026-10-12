@@ -35,6 +35,10 @@ Open `http://localhost:8130` in your browser.
 2. Open the game on two devices.
 3. Menu → **Online** → one player creates a room, the other joins with the 4-letter code.
 
+**Self-host (free):** double-click **`HOST.bat`** — it starts the server and opens a
+free Cloudflare tunnel, then prints a public `https://….trycloudflare.com` link you can
+send to a friend. See [HOSTING.md](HOSTING.md).
+
 See [HOSTING.md](HOSTING.md) for LAN and VPS deployment.
 
 ### Deploy free

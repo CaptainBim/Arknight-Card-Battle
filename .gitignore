@@ -7,6 +7,9 @@ yarn-error.log*
 .env
 .env.*
 
+# self-host binary (downloaded automatically by tools/host.ps1)
+tools/cloudflared.exe
+
 # OS / editor cruft
 .DS_Store
 Thumbs.db

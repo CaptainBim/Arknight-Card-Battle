@@ -30,7 +30,31 @@ Arsitektur singkat:
 
 ---
 
-## B. Hosting ke internet
+## B. Host sendiri di PC kamu (LAN + internet, gratis)
+
+Cara paling praktis & tanpa daftar: jalankan server di PC ini, lalu buka akses
+internet lewat **Cloudflare Quick Tunnel** (gratis, tanpa akun, mendukung WebSocket).
+
+1. Klik dua kali **`HOST.bat`** (atau jalankan `powershell -File tools\host.ps1`).
+2. Pertama kali, script otomatis mengunduh `cloudflared` (~40 MB, sekali saja).
+   Setelah itu muncul dua link:
+   ```
+   Satu Wi-Fi (LAN) : http://192.168.1.14:8130
+   Internet         : https://xxxx-xxxx.trycloudflare.com
+   ```
+3. **Link "Internet"** itu bisa dibuka temanmu dari mana saja — kirim ke dia.
+4. Di dua perangkat: menu **Online** → satu **Buat Room**, satu **Gabung**.
+5. Biarkan jendela tetap terbuka selama main. Tutup jendela / **Ctrl+C** untuk berhenti.
+
+Catatan:
+- PC harus tetap menyala (matikan sleep) selama main. Tidak perlu buka port router,
+  karena tunnel keluar dari PC, jadi aman dari firewall.
+- Link `trycloudflare.com` **acak dan berganti tiap kali** `HOST.bat` dijalankan.
+- Ganti port: `powershell -File tools\host.ps1 -Port 9000`.
+
+---
+
+## C. Hosting ke cloud (opsional)
 
 > Penting: **GitHub Pages / Netlify / Vercel (static) TIDAK cukup** — itu hanya menyajikan
 > file statis, tidak bisa menjalankan WebSocket. Kamu butuh host yang menjalankan Node.
@@ -85,7 +109,7 @@ targetnya benar-benar gratis.
 
 ---
 
-## C. Cara main
+## D. Cara main
 
 1. Menu → **Online**.
 2. **Buat Room** → muncul kode (mis. `Q9CK`) + link siap-bagikan:
