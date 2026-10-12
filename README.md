@@ -35,7 +35,17 @@ Open `http://localhost:8130` in your browser.
 2. Open the game on two devices.
 3. Menu → **Online** → one player creates a room, the other joins with the 4-letter code.
 
-See [HOSTING.md](HOSTING.md) for LAN, Render, Railway, and VPS deployment.
+See [HOSTING.md](HOSTING.md) for LAN and VPS deployment.
+
+### Deploy free
+
+One-click deploy to [Render](https://render.com) (free, no credit card):
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/CaptainBim/Arknight-Card-Battle)
+
+Render reads the included `render.yaml` automatically. The free instance sleeps after
+15 minutes of inactivity and wakes in about a minute — WebSocket traffic counts as
+activity, so it stays awake while a match is in progress.
 
 ## Project structure
 

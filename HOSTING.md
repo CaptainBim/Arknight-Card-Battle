@@ -38,21 +38,30 @@ Arsitektur singkat:
 Berkas `package.json`, `Procfile`, dan `render.yaml` sudah disiapkan (`npm start` → `node server.js`).
 Port diambil otomatis dari environment `$PORT`.
 
-### Render (gratis, paling mudah)
-1. Push folder ini ke sebuah repo GitHub (atau upload).
-2. Render → **New → Web Service** → pilih repo.
-3. Runtime: **Node**. Build Command: **kosong**. Start Command: **`node server.js`**.
-4. Deploy. Buka URL `https://namamu.onrender.com` di dua perangkat → **Online**.
+### Render (GRATIS — rekomendasi)
+
+Repo ini sudah punya `render.yaml` (Blueprint), jadi bisa **deploy 1 klik**:
+
+> **https://render.com/deploy?repo=https://github.com/CaptainBim/Arknight-Card-Battle**
+
+1. Buka link di atas → login Render (bisa pakai GitHub) → **Apply**.
+2. Render membaca `render.yaml`: Node, plan **free**, start `node server.js`.
+3. Selesai. Buka URL `https://arknight-card-battle.onrender.com` di dua perangkat → **Online**.
+
+Manual (tanpa Blueprint): Render → **New → Web Service** → pilih repo → Runtime **Node** →
+Build **`npm install`** → Start **`node server.js`** → plan **Free**.
+
+> Catatan free tier Render: instance **tidur setelah 15 menit** tanpa trafik dan bangun
+> lagi ±1 menit saat diakses (panggilan pertama agak lambat). Trafik **WebSocket dihitung
+> sebagai aktivitas**, jadi server tetap bangun selama pertandingan berjalan. Butuh 24/7
+> tanpa tidur → plan berbayar atau VPS.
 
 ### Railway
-1. New Project → Deploy from GitHub repo.
-2. Railway mendeteksi Node otomatis (`npm start` / `Procfile`).
+Hanya ada kredit gratis **$1/bulan** (tidak cukup untuk main sering). Kurang cocok kalau
+targetnya benar-benar gratis.
 
 ### Fly.io
-```
-fly launch        # deteksi Node, set internal port 8130
-fly deploy
-```
+**Sudah tidak ada free tier** untuk akun baru (wajib kartu kredit). Lewati saja.
 
 ### VPS sendiri (nginx + systemd)
 1. `node server.js` (mis. pakai PM2: `pm2 start server.js --name acb`).

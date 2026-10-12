@@ -3,6 +3,7 @@ services:
     name: arknight-card-battle
     runtime: node
     plan: free
-    buildCommand: ""
+    region: singapore
+    buildCommand: npm install
     startCommand: node server.js
     healthCheckPath: /
