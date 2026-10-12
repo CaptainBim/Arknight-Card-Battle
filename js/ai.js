@@ -72,8 +72,10 @@
         const r = E.deployOperator(P, i, row, slot);
         if (r && r.ok === false) continue;   // card rejected -> try the next one
         if (r && r.needsTarget) {
-          const t = bestDestroyTarget(P, (r.effects.find(e => e.k === 'destroyOperator') || {}).maxDef);
-          if (t) E.resolveEffects(r.effects, r.needsTarget, t);
+          if (!E.killLimitReached(P)) {
+            const t = bestDestroyTarget(P, (r.effects.find(e => e.k === 'destroyOperator') || {}).maxDef);
+            if (t) E.resolveEffects(r.effects, r.needsTarget, t);
+          }
         }
         return { done: false, note: 'deploy ' + c.name };
       }
@@ -93,8 +95,8 @@
     };
 
     // removal instant with a valid target
-    const remIdx = P.hand.findIndex(c => c.kind === 'art' && c.artType === 'Instant' && c.cost <= P.dp &&
-      (c.effects || []).some(e => e.k === 'destroyOperator'));
+    const remIdx = !E.killLimitReached(P) ? P.hand.findIndex(c => c.kind === 'art' && c.artType === 'Instant' && c.cost <= P.dp &&
+      (c.effects || []).some(e => e.k === 'destroyOperator')) : -1;
     if (remIdx >= 0) {
       const maxDef = (P.hand[remIdx].effects.find(e => e.k === 'destroyOperator') || {}).maxDef;
       if (bestDestroyTarget(P, maxDef)) {
@@ -132,7 +134,7 @@
         const maxDef = (s.effects.find(e => e.k === 'destroyOperator') || {}).maxDef;
         const needsSleep = (s.effects || []).some(e => e.k === 'sleepTarget');
         const needsBounce = (s.effects || []).some(e => e.k === 'bounceTarget');
-        if (needsDestroy) target = bestDestroyTarget(P, maxDef);
+        if (needsDestroy) { if (E.killLimitReached(P)) continue; target = bestDestroyTarget(P, maxDef); }
         else if (needsSleep || needsBounce) {
           const t = enemyTargets(P);
           target = t.sort((a, b) => E.unitAtk(b) - E.unitAtk(a))[0] || null;

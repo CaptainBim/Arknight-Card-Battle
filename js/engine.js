@@ -21,6 +21,15 @@
   const RANGED_CLASSES = ['Sniper', 'Caster', 'Medic', 'Supporter'];
   const isRanged = (card) => !!(card && RANGED_CLASSES.indexOf(card.cls) >= 0);
 
+  // Instant-kill effects (destroyOperator / destroyFront) are capped: each
+  // player may resolve at most KILL_LIMIT of them per match. Once the cap is
+  // reached the option is no longer usable (the UI hides/dims it).
+  const KILL_LIMIT = 3;
+  const KILL_KINDS = { destroyOperator: 1, destroyFront: 1 };
+  const isKillEffects = (effs) => !!(effs || []).some(e => e && KILL_KINDS[e.k]);
+  const isKillSkill = (sk) => !!(sk && isKillEffects(sk.effects));
+  const killLimitReached = (P) => !!P && (P.killCount || 0) >= KILL_LIMIT;
+
   // All operators currently on a player's board (front + back).
   const boardUnits = (P) => P.front.concat(P.back).filter(Boolean);
 
@@ -204,13 +213,13 @@
       log: [],
       players: [
         {
-          idx: 0, isAI: false, hp: START_HP, maxHp: START_HP, dp: 0, locUsedTurn: -1,
+          idx: 0, isAI: false, hp: START_HP, maxHp: START_HP, dp: 0, locUsedTurn: -1, killCount: 0,
           deck: p0deck, hand: [], grave: [],
           front: new Array(SLOTS).fill(null), back: new Array(SLOTS).fill(null), arts: [],
           location: Cards.locationById(p0locId)
         },
         {
-          idx: 1, isAI: true, hp: START_HP, maxHp: START_HP, dp: 0, locUsedTurn: -1,
+          idx: 1, isAI: true, hp: START_HP, maxHp: START_HP, dp: 0, locUsedTurn: -1, killCount: 0,
           deck: p1deck, hand: [], grave: [],
           front: new Array(SLOTS).fill(null), back: new Array(SLOTS).fill(null), arts: [],
           location: Cards.locationById(aiLocId)
@@ -473,14 +482,21 @@
           break;
         }
         case 'destroyOperator': {
+          const KP = source ? state.players[source.owner] : activePlayer();
+          if (killLimitReached(KP)) { log('Instant-kill limit reached (' + KILL_LIMIT + '/match) — ' + (source ? source.name : 'the effect') + ' fizzles.'); break; }
           if (!target || target.kind !== 'operator') break;
           if (e.maxDef != null && unitDef(target, state) > e.maxDef) break;
           destroyUnit(target, 'ability');
+          KP.killCount = (KP.killCount || 0) + 1;
           break;
         }
         case 'destroyFront': {
           const O = source ? opponentOf(state.players[source.owner]) : opponentOf(activePlayer());
+          const KP = source ? state.players[source.owner] : activePlayer();
+          if (killLimitReached(KP)) { log('Instant-kill limit reached (' + KILL_LIMIT + '/match) — ' + (source ? source.name : 'the effect') + ' fizzles.'); break; }
+          const before = O.front.filter(Boolean).length;
           O.front.slice().forEach(u => { if (u && unitDef(u, state) <= e.maxDef) destroyUnit(u, 'ability'); });
+          if (O.front.filter(Boolean).length < before) KP.killCount = (KP.killCount || 0) + 1;
           break;
         }
         case 'bounceTarget': {
@@ -633,13 +649,14 @@
   function fail(msg) { return { ok: false, error: msg }; }
 
   global.Engine = {
-    SLOTS, START_HP, DP_PER_TURN, HAND_LIMIT,
+    SLOTS, START_HP, DP_PER_TURN, HAND_LIMIT, KILL_LIMIT,
     newGame,
     get state() { return state; },
     get active() { return activePlayer(); },
     activePlayer, opponentOf,
     drawCard, unitAtk: (u) => unitAtk(u, state), unitDef: (u) => unitDef(u, state), unitRange,
     boardHasBlocker,
+    isKillSkill, isKillEffects, killLimitReached,
     canDeploy, deployOperator, playArt, activateSkill, activateLocation, attack, endTurn,
     destroyUnit, damagePlayer, resolveEffects,
     onChange: (fn) => { listeners.push(fn); },

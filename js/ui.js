@@ -58,6 +58,7 @@
     // the turn it is deployed, only a DP-granting ability may be used
     if (u.turnPlayed === E.state.turn && !(u.skill.effects || []).some(e => e.k === 'gainDP')) return false;
     if (isPureHealCard(u) && hpFull()) return false;   // nothing to heal
+    if (E.isKillSkill(u.skill) && E.killLimitReached(P())) return false;   // instant-kill cap reached
     return true;
   }
   const canAttackNow = (u) => u && u.kind === 'operator' && !u.exhausted && !u.slept && isMyTurn();
@@ -161,6 +162,7 @@
     $(which + 'HpVal').textContent = Math.max(0, pl.hp);
     $(which + 'HpBar').style.width = Math.max(0, Math.min(100, (pl.hp / max) * 100)) + '%';
     $(which + 'Dp').textContent = pl.dp;
+    const kc = $(which + 'Kill'); if (kc) kc.textContent = (pl.killCount || 0) + '/' + E.KILL_LIMIT;
     $(which + 'Deck').textContent = pl.deck.length;
     $(which + 'Grave').textContent = pl.grave.length;
     // Location Active button (only on the local player's own HUD)
@@ -426,9 +428,11 @@
   }
   function applyHandCardState(node, card, i) {
     const pl = P();
+    const killCap = card.kind === 'art' && E.isKillEffects(card.effects) && E.killLimitReached(pl);
     node.classList.toggle('unaffordable', pl.dp < card.cost);
     node.classList.toggle('disabled', !isMyTurn());
-    node.classList.toggle('unusable', card.kind === 'art' && isPureHealCard(card) && hpFull());
+    node.classList.toggle('killcap', killCap);
+    node.classList.toggle('unusable', (card.kind === 'art' && isPureHealCard(card) && hpFull()) || killCap);
     node.classList.toggle('selected', i === S.selHand);
   }
 
@@ -668,6 +672,11 @@
       setStatus('Darah sudah penuh (' + pl.hp + '/' + (pl.maxHp || E.START_HP) + ') — kartu heal tidak bisa dipakai.');
       return;
     }
+    if (card.kind === 'art' && E.isKillEffects(card.effects) && E.killLimitReached(pl)) {
+      S.selHand = -1; render();
+      setStatus('Batas instant-kill tercapai (' + E.KILL_LIMIT + '× per match) — kartu ini sudah tidak bisa dipakai.');
+      return;
+    }
     if (S.selHand === index) return cancel();
     S.selHand = index; S.selUnit = null;
     if (card.kind === 'operator') {
@@ -730,6 +739,10 @@
       const r = Cmd.deploy(S.selHand, row, slotIndex);
       if (r && r.ok === false) { setStatus(r.error); return; }
       if (r && r.needsTarget) {
+        if (E.isKillSkill(r.needsTarget.skill) && E.killLimitReached(P())) {
+          setStatus('Batas instant-kill tercapai (' + E.KILL_LIMIT + '× per match) — efek ini tidak aktif.');
+          resetAfterAction(); return;
+        }
         S.pending = { effects: r.effects, source: r.needsTarget, label: 'Choose an enemy operator to destroy.' };
         S.mode = 'skill'; S.selHand = -1; render(); return;
       }
@@ -890,7 +903,7 @@
       '<h2>Cards</h2><ul><li><b>Operators</b> — have ATK &amp; DEF; they block enemy attacks <b>from the front row only</b>.</li><li><b>Front row (▲)</b> — any operator. <b>Back row (▼)</b> — ranged operators only (Sniper, Caster, Medic, Supporter); the back row never blocks.</li><li><b>Instant Arts</b> — resolve immediately.</li><li><b>Field Arts</b> — a support zone under your deck/discard, lasts a few turns.</li><li><b>Locations</b> — one per player, permanent; some have an Active ability usable once per turn (costs DP).</li></ul>' +
       '<h2>Attack &amp; blocking</h2><ul><li>Only the <b>front row blocks</b>: while the enemy has any operator awake in the front row, you <b>cannot strike their Doctor</b>. Ranged operators in the back row do <b>not</b> block — clear the enemy front line and the Doctor is exposed.</li><li>A <b>back-row operator</b> can only be attacked once the enemy front line is empty.</li><li>Attacking a Doctor deals damage equal to the attacker\'s ATK (each Doctor has 30 HP).</li><li>Operator vs operator: the attacker deals <b>ATK − (target DEF ÷ 3, rounded down)</b> damage, at least 1, to the target\'s <b>HP</b>. Damage stays between turns; an operator is destroyed at 0 HP.</li><li>Each Operator has <b>15–30 HP</b> (tougher classes and rarer units last longer).</li><li>Heal effects stop at your max HP (30) — a healing card/ability cannot be used while your HP is already full.</li></ul>' +
       '<h2>Arena</h2><ul><li>Every match takes place on a random <b>Arena</b>. Its buff is the game\'s <b>only</b> buff and it is <b>global</b> — it applies to <b>both</b> players automatically (shown on the frontline).</li></ul>' +
-      '<h2>Keywords</h2><ul><li><b>Taunt</b> — must be attacked first.</li><li><b>Sleep</b> — can\'t attack or block, but can still be attacked. Lasts 1 turn (up to 2).</li><li><b>Helidrop</b> — can attack the turn it is played.</li><li><b>Bounce</b> — return a card to hand.</li><li><b>Silence</b> — disables a card ability. Lasts 2 turns (up to 3).</li></ul>' +
+      '<h2>Keywords</h2><ul><li><b>Taunt</b> — must be attacked first.</li><li><b>Sleep</b> — can\'t attack or block, but can still be attacked. Lasts 1 turn (up to 2).</li><li><b>Helidrop</b> — can attack the turn it is played.</li><li><b>Bounce</b> — return a card to hand.</li><li><b>Silence</b> — disables a card ability. Lasts 2 turns (up to 3).</li><li><b>Instant-kill</b> — <b>"Destroy"</b> effects (operator skills <i>and</i> Arts) are capped at <b>3 uses per player per match</b>. After that the option is hidden / marked LIMIT and can no longer be used.</li></ul>' +
       '<p style="color:#8b96ab">Tip: click your <b>DECK</b> / <b>DISCARD</b> piles to inspect them. <kbd>E</kbd> ends turn · <kbd>Esc</kbd> cancels · <kbd>L</kbd> toggles the log.</p>' +
       '<div class="row-btns"><button id="btnCloseHelp" class="btn primary">Close</button></div>';
     $('overlay').classList.remove('hidden');

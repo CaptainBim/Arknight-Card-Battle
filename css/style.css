@@ -246,6 +246,8 @@ button{font-family:inherit;cursor:pointer}
 .card.disabled{filter:grayscale(.8) brightness(.55);cursor:not-allowed}
 .card.unusable{filter:grayscale(.55) brightness(.72);cursor:not-allowed}
 .card.unusable::after{content:"❤ PENUH";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-6deg);font-size:9px;font-weight:800;letter-spacing:.5px;color:#ffe3e3;background:rgba(120,20,30,.86);border:1px solid #b44;border-radius:7px;padding:2px 7px;pointer-events:none}
+.card.killcap{filter:grayscale(.7) brightness(.6);cursor:not-allowed}
+.card.killcap::after{content:"☠ LIMIT";position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-6deg);font-size:9px;font-weight:800;letter-spacing:.5px;color:#e8e8ff;background:rgba(40,30,90,.9);border:1px solid #66c;border-radius:7px;padding:2px 7px;pointer-events:none}
 .card.unaffordable .cost{background:linear-gradient(180deg,#5a5f6b,#33373f);color:#c8ccd6}
 .card.selected{border-color:#fff;transform:translateY(-16px);box-shadow:0 0 22px rgba(255,255,255,.55)}
 .card .art{position:absolute;inset:0;background-size:cover;background-position:top center}

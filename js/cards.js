@@ -483,6 +483,44 @@
     }
   });
 
+  // ---------------------------------------------------------------------------
+  // Balance patch — "Top-end nerf".
+  // The highest-ATK outliers lose raw ATK, and Blaze/Młynar's passive ATK buff
+  // is halved (+2 -> +1). Effect values AND printed text are updated together.
+  // (Instant-kill skills/Arts are additionally capped in the engine: KILL_LIMIT.)
+  // ---------------------------------------------------------------------------
+  const TOP_NERF = {
+    skadi:      { atk: 7 },          // 9 -> 7  (ATK tertinggi di game)
+    schwarz:    { atk: 6 },          // 8 -> 6  (+ instant kill)
+    cliffheart: { atk: 5 },          // 7 -> 5
+    projektred: { atk: 4 },          // 5 -> 4
+    phantom:    { atk: 4 },          // 5 -> 4
+    texas2:     { atk: 6 },          // 7 -> 6
+    fartooth:   { atk: 6 },          // 7 -> 6
+    nearl2:     { atk: 6 },          // 7 -> 6
+    chen:       { atk: 5 },          // 6 -> 5
+    ifrit:      { atk: 7 },          // 8 -> 7
+    dusk:       { atk: 7 },          // 8 -> 7
+    logos:      { atk: 6 },          // 7 -> 6
+    w:          { atk: 7 },          // 8 -> 7
+    carnelian:  { atk: 7 },          // 8 -> 7
+    mostima:    { atk: 7 },          // 8 -> 7
+    eunectes:   { atk: 6 },          // 7 -> 6 (DEF 7 tetap)
+    blaze:      { buffAtkSelf: 1 },  // +2 -> +1 (efektif 9 -> 8)
+    mlynar:     { buffAtkSelf: 1 }   // +2 -> +1 (efektif 9 -> 8)
+  };
+  OPERATORS.forEach(op => {
+    const n = TOP_NERF[op.slug];
+    if (!n) return;
+    if (n.atk != null) op.atk = n.atk;
+    if (n.buffAtkSelf != null && op.skill && op.skill.effects) {
+      op.skill.effects.forEach(e => { if (e.k === 'buffAtkSelf') e.v = n.buffAtkSelf; });
+      if (typeof op.skill.text === 'string') {
+        op.skill.text = op.skill.text.replace(/\+([0-9]+)( ATK)/g, '+' + n.buffAtkSelf + '$2');
+      }
+    }
+  });
+
   global.Cards = {
     OPERATORS, ARTS, LOCATIONS, ARENAS,
     CLASS_COLOR, CLASS_ICON, CLASS_HP, NATION_NAME,

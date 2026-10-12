@@ -11,6 +11,9 @@
   const C = global.Cards;
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 
+  // Instant-kill effects are capped per player per match (see engine KILL_LIMIT).
+  const killCapNote = () => ' (dibatasi: maks. ' + ((global.Engine && global.Engine.KILL_LIMIT) || 3) + '× instant-kill per pemain per match).';
+
   function durSuffix(type, duration) {
     if (type === 'Passive') return ' (pasif — selalu aktif selama kartu ini ada di lapangan)';
     if (type === 'Auto') return ' (otomatis di akhir tiap turn-mu)';
@@ -24,8 +27,8 @@
       case 'healPlayer': return 'Pulihkan ' + e.v + ' HP ke dirimu sendiri (maksimal 30 HP; kalau HP-mu penuh kartu ini tidak bisa dipakai).';
       case 'gainDP': return 'Dapat ' + e.v + ' DP.';
       case 'draw': return 'Tarik ' + e.v + ' kartu dari deck.';
-      case 'destroyOperator': return 'Hancurkan 1 operator musuh' + (e.maxDef != null ? ' dengan DEF ≤ ' + e.maxDef : ' apa pun') + '.';
-      case 'destroyFront': return 'Hancurkan SEMUA operator musuh di baris depan yang DEF-nya ≤ ' + e.maxDef + '.';
+      case 'destroyOperator': return 'Hancurkan 1 operator musuh' + (e.maxDef != null ? ' dengan DEF ≤ ' + e.maxDef : ' apa pun') + '.' + killCapNote();
+      case 'destroyFront': return 'Hancurkan SEMUA operator musuh di baris depan yang DEF-nya ≤ ' + e.maxDef + '.' + killCapNote();
       case 'bounceTarget': return 'Kembalikan 1 operator musuh ke tangan pemiliknya (keluar dari lapangan).';
       case 'buffAtkSelf': return 'Operator ini mendapat +' + e.v + ' ATK' + durSuffix(type, duration) + '.';
       case 'buffDefSelf': return 'Operator ini mendapat +' + e.v + ' DEF' + durSuffix(type, duration) + '.';
