@@ -46,7 +46,13 @@ Repo ini sudah punya `render.yaml` (Blueprint), jadi bisa **deploy 1 klik**:
 
 1. Buka link di atas → login Render (bisa pakai GitHub) → **Apply**.
 2. Render membaca `render.yaml`: Node, plan **free**, start `node server.js`.
-3. Selesai. Buka URL `https://arknight-card-battle.onrender.com` di dua perangkat → **Online**.
+3. Selesai. Buka **URL yang tertera di dashboard Render** untuk service ini
+   (nama bisa dapat akhiran, mis. `arknight-card-battle-a1b2.onrender.com`) di dua
+   perangkat → **Online**.
+
+> ⚠️ Kalau halaman menampilkan **`Not Found`** (huruf besar), itu 404 milik Render —
+> berarti hostname-nya salah. Buka dashboard Render → service-nya → copy **URL** yang
+> ada di bagian atas (yang berakhiran `.onrender.com`) dan pakai itu.
 
 Manual (tanpa Blueprint): Render → **New → Web Service** → pilih repo → Runtime **Node** →
 Build **`npm install`** → Start **`node server.js`** → plan **Free**.
