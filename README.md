@@ -1,63 +1,55 @@
 # Arknight Card Battle
 
-Game kartu duel bertema **Arknights** (HTML5 + CSS + JavaScript murni, tanpa framework).
-Bisa dimainkan **offline vs AI** maupun **online 2 pemain jarak jauh** lewat internet.
+A browser-based, Arknights-themed trading card game. Play offline against an AI or
+online against a friend in real time. Built with plain HTML, CSS, and JavaScript —
+no frameworks, no build step.
 
-## Fitur
+![Node](https://img.shields.io/badge/node-%3E%3D18-339933?logo=node.js&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-blue)
 
-- **Vs AI** — mode offline, AI heuristik yang deploy, pakai skill, dan menyerang.
-- **Online 2 pemain** — cukup satu server Node kecil; kedua browser menjalankan engine
-  yang sama dari seed yang sama (lock-step), server hanya jadi relay pesan.
-- **Deck Builder** — deck wajib tepat 20 kartu (maks. 2 kopi per Art).
-- **Board 2 baris** — baris depan (semua operator, memblokir) & baris belakang
-  (operator ranged: Sniper/Caster/Medic/Supporter, tidak memblokir).
-- **Field Arts** — ditempatkan di zona support di bawah tumpukan deck/discard.
-- **Codex** — daftar Operator, Arts, Locations, Arenas + penjelasan lengkap tiap efek.
+## Features
 
-## Menjalankan
+- **Offline vs AI** — heuristic AI that deploys, uses skills, and attacks.
+- **Online 1v1** — lightweight WebSocket relay; both clients run the same
+  deterministic engine from a shared seed.
+- **Deck Builder** — build a 20-card deck (max. 2 copies per Art).
+- **Two-row board** — front row (all operators, blocks) and back row
+  (ranged only, does not block).
+- **Field Arts** — long-lasting support cards placed in a dedicated support zone.
+- **Codex** — browse operators, Arts, locations, and arenas with full effect breakdowns.
 
-Butuh **Node.js >= 18** (untuk mode online). Mode vs AI bisa dibuka langsung tanpa server.
+## Getting started
+
+Requires Node.js 18+ (only for the online server).
 
 ```bash
-npm start            # default port 8130
-node server.js 3000  # port lain
+npm start            # http://localhost:8130
+node server.js 3000  # custom port
 ```
 
-Lalu buka `http://localhost:8130`.
+Open `http://localhost:8130` in your browser.
 
-### Online (2 pemain)
+### Online
 
-1. Jalankan `node server.js` di satu komputer/server.
-2. Buka `http://localhost:8130` di dua perangkat.
-3. Menu → **Online** → satu pemain **Buat Room** (dapat kode 4 huruf), yang lain **Gabung**.
+1. Run `node server.js` on one machine.
+2. Open the game on two devices.
+3. Menu → **Online** → one player creates a room, the other joins with the 4-letter code.
 
-Detail lengkap (LAN, Render, Railway, Fly.io, VPS) ada di **[HOSTING.md](HOSTING.md)**.
+See [HOSTING.md](HOSTING.md) for LAN, Render, Railway, and VPS deployment.
 
-### Hosting gratis di Render
-
-Repo ini sudah menyertakan `package.json`, `Procfile`, dan `render.yaml`.
-Push ke GitHub → Render **New → Web Service** → pilih repo → Deploy.
-Start command: `node server.js`.
-
-## Struktur
+## Project structure
 
 ```
-index.html        halaman utama (menu + arena + hand)
-css/style.css     seluruh tampilan
-js/cards.js       database kartu (Operator / Arts / Locations / Arenas)
-js/engine.js      aturan permainan + RNG ber-seed
-js/ai.js          AI heuristik
-js/ui.js          render + interaksi + command layer (Cmd)
-js/net.js         klien jaringan (WebSocket)
-js/menu.js        menu, deck builder, codex
-js/explain.js     modul penjelasan efek kartu
-js/tooltip.js     tooltip kartu
-js/audio.js       efek suara
-server.js         server + relay WebSocket (tanpa dependency)
-tools/            skrip bantu (serve.js untuk dev statis, fetch-assets.ps1)
+index.html      entry point
+css/            styles
+js/             game logic (cards, engine, AI, UI, net, menu)
+server.js       static server + WebSocket relay
+tools/          dev helpers
 ```
 
-## Lisensi / Catatan
+## License
 
-Proyek penggemar (fan project). Arknights dan nama/karakter terkait adalah milik
-Hypergryph / Studio Montagne. Aset gambar dipakai hanya untuk keperluan non-komersial.
+MIT — see [LICENSE](LICENSE).
+
+Fan project. Arknights and all related names and characters are property of
+Hypergryph / Studio Montagne. Assets are used for non-commercial purposes only.
