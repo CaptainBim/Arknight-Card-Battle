@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Arknight Card Battle</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+
+<!-- ==================== MAIN MENU ==================== -->
+<div id="menu" class="menu hidden-screen">
+  <div class="menu-shell">
+    <header class="menu-top">
+      <div class="menu-logo">
+        <span class="ml-main">ARKNIGHT</span>
+        <span class="ml-sub">CARD&nbsp;BATTLE</span>
+      </div>
+      <nav id="menuNav">
+        <button class="nav-btn" data-screen="home">▶&nbsp;Play</button>
+        <button class="nav-btn" data-screen="online">🌐&nbsp;Online</button>
+        <button class="nav-btn" data-screen="deck">🃏&nbsp;Deck&nbsp;Card</button>
+        <button class="nav-btn" data-screen="cards">📖&nbsp;Cards</button>
+        <button class="nav-btn" data-screen="settings">⚙&nbsp;Settings</button>
+      </nav>
+    </header>
+    <div id="menuScreen" class="menu-screen"></div>
+  </div>
+</div>
+
+<!-- ==================== GAME ==================== -->
+<div id="app" class="hidden-screen">
+
+  <header id="topbar">
+    <div class="brand">
+      <span class="brand-main">ARKNIGHT</span>
+      <span class="brand-sub">CARD BATTLE</span>
+    </div>
+    <div id="turnBanner" class="turn-banner">—</div>
+    <div class="top-actions">
+      <button id="btnMenu" class="btn ghost" title="Pause (settings &amp; exit)">⏸ Pause</button>
+      <button id="btnLog" class="btn ghost" title="Show / hide battle log">▤ Log</button>
+      <button id="btnHelp" class="btn ghost" title="How to play">? Rules</button>
+      <button id="btnEnd" class="btn primary" disabled>End Turn</button>
+    </div>
+  </header>
+
+  <main id="arena">
+    <div id="fx"></div>
+
+    <!-- ============ ENEMY (faces the player) ============ -->
+    <section class="side enemy" id="enemySide">
+      <aside class="piles">
+        <div class="pile-row">
+          <div class="pile deck" id="enemyDeckPile" title="Enemy deck">
+            <span class="pile-face"></span>
+            <span class="pile-count" id="enemyDeck">0</span>
+            <span class="pile-label">DECK</span>
+          </div>
+          <div class="pile discard" id="enemyGravePile" title="Enemy discard pile — click to view">
+            <span class="pile-face"></span>
+            <span class="pile-count" id="enemyGrave">0</span>
+            <span class="pile-label">DISCARD</span>
+          </div>
+        </div>
+        <div class="arts-zone" id="enemyArts" data-side="1" title="Enemy support Arts (Field)"></div>
+      </aside>
+
+      <div class="board">
+        <div class="row back" id="enemyBack" data-side="1" data-row="back"></div>
+        <div class="row front" id="enemyFront" data-side="1" data-row="front"></div>
+      </div>
+
+      <div class="hud" id="enemyHud">
+        <div class="hud-body">
+          <div class="who">ENEMY DOCTOR <span class="who-tag">AI</span></div>
+          <div class="hp-line"><span id="enemyHpVal">30</span><span class="hp-label">HP</span></div>
+          <div class="hp-bar"><i id="enemyHpBar"></i></div>
+          <div class="hud-meta"><span>DP <b id="enemyDp">0</b></span></div>
+        </div>
+        <div class="avatar">AI</div>
+        <div class="target-hint">▶ strike here</div>
+      </div>
+    </section>
+
+    <div class="midline"><span class="ml-label">⚔ FRONTLINE ⚔</span><span class="ml-stage" id="stageBuff" title=""></span></div>
+
+    <!-- ============ PLAYER ============ -->
+    <section class="side player" id="playerSide">
+      <div class="hud" id="playerHud">
+        <div class="avatar you">YOU</div>
+        <div class="hud-body">
+          <div class="who">DOCTOR <span class="who-tag you-tag">YOU</span></div>
+          <div class="hp-line"><span id="playerHpVal">30</span><span class="hp-label">HP</span></div>
+          <div class="hp-bar"><i id="playerHpBar"></i></div>
+          <div class="hud-meta"><span>DP <b id="playerDp">0</b></span></div>
+          <button id="locBtn" class="loc-btn hidden" title=""></button>
+        </div>
+      </div>
+
+      <div class="board">
+        <div class="row front" id="playerFront" data-side="0" data-row="front"></div>
+        <div class="row back" id="playerBack" data-side="0" data-row="back"></div>
+      </div>
+
+      <aside class="piles">
+        <div class="pile-row">
+          <div class="pile deck" id="playerDeckPile" title="Your deck">
+            <span class="pile-face"></span>
+            <span class="pile-count" id="playerDeck">0</span>
+            <span class="pile-label">DECK</span>
+          </div>
+          <div class="pile discard" id="playerGravePile" title="Your discard pile — click to view">
+            <span class="pile-face"></span>
+            <span class="pile-count" id="playerGrave">0</span>
+            <span class="pile-label">DISCARD</span>
+          </div>
+        </div>
+        <div class="arts-zone" id="playerArts" data-side="0" title="Your support Arts (Field)"></div>
+      </aside>
+    </section>
+  </main>
+
+  <footer id="bottom">
+    <div id="statusLine" class="status-line">—</div>
+    <div id="hand" class="hand"></div>
+    <div id="actionBar" class="action-bar hidden"></div>
+  </footer>
+
+  <aside id="logPanel" class="log-panel">
+    <div class="log-title">
+      <span>BATTLE LOG</span>
+      <button id="btnLogHide" class="log-hide" title="Hide log">✕</button>
+    </div>
+    <div id="log" class="log"></div>
+  </aside>
+
+</div>
+
+<!-- Game over / help / pile viewer overlay -->
+<div id="overlay" class="overlay hidden">
+  <div class="overlay-card" id="overlayCard"></div>
+</div>
+
+<script src="js/cards.js"></script>
+<script src="js/explain.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/ai.js"></script>
+<script src="js/audio.js"></script>
+<script src="js/tooltip.js"></script>
+<script src="js/net.js"></script>
+<script src="js/menu.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

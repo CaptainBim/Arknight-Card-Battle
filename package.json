@@ -1,0 +1,14 @@
+{
+  "name": "arknight-card-battle",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Arknights-themed head-to-head card battle (HTML5 + WebSocket online 2-player).",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js 8130"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,14 @@
+# dependencies
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# local env / secrets
+.env
+.env.*
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+*.log
