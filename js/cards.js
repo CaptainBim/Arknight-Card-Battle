@@ -86,8 +86,8 @@
       skill:{ name:"I'll Believe", type:'Active', cost:2, text:'Deal 2 damage to the enemy player, twice.',
               effects:[{k:'dmgPlayer',v:2},{k:'dmgPlayer',v:2}] } },
     { slug:'schwarz', name:'Schwarz', cls:'Sniper', rar:6, atk:8, def:3, cost:5, range:'long', nation:'columbia',
-      skill:{ name:'Roar', type:'Active', cost:2, text:'Destroy one enemy operator.',
-              effects:[{k:'destroyOperator'}], needsTarget:true } },
+      skill:{ name:'Roar', type:'Active', cost:3, text:'Destroy one enemy operator with DEF 5 or less.',
+              effects:[{k:'destroyOperator',maxDef:5}], needsTarget:true } },
     { slug:'rosmontis', name:'Rosmontis', cls:'Sniper', rar:6, atk:6, def:3, cost:8, range:'long', nation:'rhodes',
       skill:{ name:'Heart of the Night', type:'Auto', text:'At the end of your turn, deal 3 damage to the enemy player.',
               effects:[{k:'dmgPlayer',v:3}] } },
@@ -316,8 +316,8 @@
       text:'At the end of your turn, deal 2 damage to the enemy player.', effects:[{k:'dmgPlayer',v:2}] },
     { id:'arts_chrono', name:'Chrono Field', artType:'Field', cost:4, duration:4, img:'assets/arts/arts_chrono.png',
       text:'All friendly operators get +2 DEF.', effects:[{k:'buffDefAll',v:2}] },
-    { id:'arts_overload', name:'Originium Overload', artType:'Instant', cost:5, img:'assets/arts/arts_overload.png',
-      text:'Destroy one enemy operator.', effects:[{k:'destroyOperator'}], needsTarget:true },
+    { id:'arts_overload', name:'Originium Overload', artType:'Instant', cost:6, img:'assets/arts/arts_overload.png',
+      text:'Destroy one enemy operator (ignores DEF).', effects:[{k:'destroyOperator'}], needsTarget:true },
     { id:'arts_healbeacon', name:'Healing Beacon', artType:'Instant', cost:3, img:'assets/arts/arts_healbeacon.png',
       text:'Heal 12 HP to yourself.', effects:[{k:'healPlayer',v:12}] },
     { id:'arts_dpdrone', name:'Logistics Drone', artType:'Instant', cost:2, img:'assets/arts/arts_dpdrone.png',
@@ -345,7 +345,7 @@
     { id:'arts_quickdraw', name:'Quick Draw', artType:'Instant', cost:2, img:'assets/arts/arts_quickdraw.png',
       text:'Draw 3 cards.', effects:[{k:'draw',v:3}] },
     { id:'arts_dpburst', name:'Field Supply', artType:'Instant', cost:1, img:'assets/arts/arts_dpburst.png',
-      text:'Gain 6 DP.', effects:[{k:'gainDP',v:6}] },
+      text:'Gain 3 DP.', effects:[{k:'gainDP',v:3}] },
     { id:'arts_silencefield', name:'Silence Field', artType:'Instant', cost:3, img:'assets/arts/arts_silencefield.png',
       text:'Silence one enemy operator.', effects:[{k:'silenceTarget'}], needsTarget:true },
     { id:'arts_sweeper', name:'Devastation', artType:'Instant', cost:5, img:'assets/arts/arts_sweeper.png',
@@ -353,15 +353,15 @@
     { id:'arts_laststand', name:'Last Stand', artType:'Instant', cost:4, img:'assets/arts/arts_laststand.png',
       text:'Heal 16 HP to yourself.', effects:[{k:'healPlayer',v:16}] },
     // ---- extended Arts (batch 3 — Pokémon-TCG-inspired support) ----
-    { id:'arts_intel', name:'Intel Report', artType:'Instant', cost:1, img:'assets/arts/arts_reinforce.png',
-      text:'Draw 2 cards.', effects:[{k:'draw',v:2}] },
-    { id:'arts_disrupt', name:'Oripathy Fog', artType:'Instant', cost:3, img:'assets/arts/arts_frostnova.png',
+    { id:'arts_intel', name:'Intel Report', artType:'Instant', cost:1, img:'assets/arts/arts_intel.png',
+      text:'Draw 1 card, then gain 1 DP.', effects:[{k:'draw',v:1},{k:'gainDP',v:1}] },
+    { id:'arts_disrupt', name:'Oripathy Fog', artType:'Instant', cost:3, img:'assets/arts/arts_disrupt.png',
       text:"Shuffle the enemy's hand into their deck, then they draw the same number of cards.", effects:[{k:'shuffleOppHand'}] },
-    { id:'arts_snowstorm', name:'Blizzard', artType:'Instant', cost:4, img:'assets/arts/arts_concussion.png',
+    { id:'arts_snowstorm', name:'Blizzard', artType:'Instant', cost:4, img:'assets/arts/arts_snowstorm.png',
       text:"Shuffle the enemy's hand into their deck; they draw only 2 cards.", effects:[{k:'shuffleOppHand', v:2}] },
-    { id:'arts_salvage', name:'Salvage Crew', artType:'Instant', cost:3, img:'assets/arts/arts_gravemend.png',
+    { id:'arts_salvage', name:'Salvage Crew', artType:'Instant', cost:3, img:'assets/arts/arts_salvage.png',
       text:'Return 2 random cards from your discard pile to your hand.', effects:[{k:'graveToHand', v:2}] },
-    { id:'arts_briefing', name:'Tactical Briefing', artType:'Instant', cost:2, img:'assets/arts/arts_quickdraw.png',
+    { id:'arts_briefing', name:'Tactical Briefing', artType:'Instant', cost:2, img:'assets/arts/arts_briefing.png',
       text:'Shuffle your hand into your deck, then draw the same number of cards +1.', effects:[{k:'shuffleOwnHand', v:1}] }
   ];
 
@@ -487,7 +487,12 @@
   // Balance patch — "Top-end nerf".
   // The highest-ATK outliers lose raw ATK, and Blaze/Młynar's passive ATK buff
   // is halved (+2 -> +1). Effect values AND printed text are updated together.
-  // (Instant-kill skills/Arts are additionally capped in the engine: KILL_LIMIT.)
+  //
+  // Hard-removal ("instant-kill") rebalance:
+  //   • the engine now caps by OPERATORS DESTROYED (KILL_LIMIT per player per
+  //     match; an area effect counts each operator it kills and stops at the cap);
+  //   • Schwarz's "Roar" is no longer unconditional (cost 2 -> 3, DEF <= 5);
+  //   • "Originium Overload" costs 6, so unconditional removal is a full turn.
   // ---------------------------------------------------------------------------
   const TOP_NERF = {
     skadi:      { atk: 7 },          // 9 -> 7  (ATK tertinggi di game)

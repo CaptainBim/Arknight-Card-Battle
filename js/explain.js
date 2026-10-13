@@ -12,7 +12,9 @@
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
 
   // Instant-kill effects are capped per player per match (see engine KILL_LIMIT).
-  const killCapNote = () => ' (dibatasi: maks. ' + ((global.Engine && global.Engine.KILL_LIMIT) || 3) + '× instant-kill per pemain per match).';
+  // The cap counts OPERATORS destroyed, so an area effect that kills several
+  // operators uses up several of the allowance at once.
+  const killCapNote = () => ' (dibatasi: maks. ' + ((global.Engine && global.Engine.KILL_LIMIT) || 3) + ' operator bisa dihancurkan lewat instant-kill per pemain per match — efek area menghabiskan jatah sebanyak jumlah operator yang hancur).';
 
   function durSuffix(type, duration) {
     if (type === 'Passive') return ' (pasif — selalu aktif selama kartu ini ada di lapangan)';
@@ -28,7 +30,7 @@
       case 'gainDP': return 'Dapat ' + e.v + ' DP.';
       case 'draw': return 'Tarik ' + e.v + ' kartu dari deck.';
       case 'destroyOperator': return 'Hancurkan 1 operator musuh' + (e.maxDef != null ? ' dengan DEF ≤ ' + e.maxDef : ' apa pun') + '.' + killCapNote();
-      case 'destroyFront': return 'Hancurkan SEMUA operator musuh di baris depan yang DEF-nya ≤ ' + e.maxDef + '.' + killCapNote();
+      case 'destroyFront': return 'Hancurkan SEMUA operator musuh di baris depan yang DEF-nya ≤ ' + e.maxDef + ' (tiap operator yang hancur memakai 1 jatah instant-kill).' + killCapNote();
       case 'bounceTarget': return 'Kembalikan 1 operator musuh ke tangan pemiliknya (keluar dari lapangan).';
       case 'buffAtkSelf': return 'Operator ini mendapat +' + e.v + ' ATK' + durSuffix(type, duration) + '.';
       case 'buffDefSelf': return 'Operator ini mendapat +' + e.v + ' DEF' + durSuffix(type, duration) + '.';
@@ -43,7 +45,7 @@
       case 'selfDestructEnd': return 'Operator ini hancur sendiri di akhir turn-mu.';
       case 'tempLongRange': return 'Operator ini mendapat range jauh (Long) sampai akhir turn.';
       case 'taunt': return 'Taunt — musuh WAJIB menghancurkan operator ini lebih dulu sebelum bisa menyerang target lain.';
-      case 'untargetable': return 'Operator ini tidak bisa dijadikan target skill oleh musuh.';
+      case 'untargetable': return 'Operator ini tidak bisa dijadikan target Arts maupun skill musuh (serangan biasa dan efek area tetap bisa mengenainya).';
       case 'dpStart': return 'Di awal tiap turn-mu, dapat ' + e.v + ' DP tambahan.';
       default: return null;
     }

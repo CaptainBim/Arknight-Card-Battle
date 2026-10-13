@@ -22,13 +22,16 @@
   const isRanged = (card) => !!(card && RANGED_CLASSES.indexOf(card.cls) >= 0);
 
   // Instant-kill effects (destroyOperator / destroyFront) are capped: each
-  // player may resolve at most KILL_LIMIT of them per match. Once the cap is
-  // reached the option is no longer usable (the UI hides/dims it).
+  // player may DESTROY at most KILL_LIMIT enemy operators per match with them.
+  // The cap counts OPERATORS destroyed (not activations), so a board-wide
+  // destroyFront stops as soon as it exhausts the remaining allowance. Once
+  // the cap is reached the option is no longer usable (the UI hides/dims it).
   const KILL_LIMIT = 3;
   const KILL_KINDS = { destroyOperator: 1, destroyFront: 1 };
   const isKillEffects = (effs) => !!(effs || []).some(e => e && KILL_KINDS[e.k]);
   const isKillSkill = (sk) => !!(sk && isKillEffects(sk.effects));
   const killLimitReached = (P) => !!P && (P.killCount || 0) >= KILL_LIMIT;
+  const killRemaining = (P) => Math.max(0, KILL_LIMIT - ((P && P.killCount) || 0));
 
   // All operators currently on a player's board (front + back).
   const boardUnits = (P) => P.front.concat(P.back).filter(Boolean);
@@ -488,8 +491,9 @@
         }
         case 'destroyOperator': {
           const KP = source ? state.players[source.owner] : activePlayer();
-          if (killLimitReached(KP)) { log('Instant-kill limit reached (' + KILL_LIMIT + '/match) — ' + (source ? source.name : 'the effect') + ' fizzles.'); break; }
+          if (killLimitReached(KP)) { log('Instant-kill limit reached (' + KILL_LIMIT + ' operators/match) — ' + (source ? source.name : 'the effect') + ' fizzles.'); break; }
           if (!target || target.kind !== 'operator') break;
+          if (hasPassive(target, 'untargetable')) { log(target.name + ' cannot be targeted — ' + (source ? source.name : 'the Art') + ' fizzles.'); break; }
           if (e.maxDef != null && unitDef(target, state) > e.maxDef) break;
           destroyUnit(target, 'ability');
           KP.killCount = (KP.killCount || 0) + 1;
@@ -498,14 +502,21 @@
         case 'destroyFront': {
           const O = source ? opponentOf(state.players[source.owner]) : opponentOf(activePlayer());
           const KP = source ? state.players[source.owner] : activePlayer();
-          if (killLimitReached(KP)) { log('Instant-kill limit reached (' + KILL_LIMIT + '/match) — ' + (source ? source.name : 'the effect') + ' fizzles.'); break; }
-          const before = O.front.filter(Boolean).length;
-          O.front.slice().forEach(u => { if (u && unitDef(u, state) <= e.maxDef) destroyUnit(u, 'ability'); });
-          if (O.front.filter(Boolean).length < before) KP.killCount = (KP.killCount || 0) + 1;
+          const remain = killRemaining(KP);
+          if (remain <= 0) { log('Instant-kill limit reached (' + KILL_LIMIT + ' operators/match) — ' + (source ? source.name : 'the effect') + ' fizzles.'); break; }
+          let killed = 0;
+          O.front.slice().forEach(u => {
+            if (!u || killed >= remain) return;               // stop at the remaining cap
+            if (e.maxDef != null && unitDef(u, state) > e.maxDef) return;
+            destroyUnit(u, 'ability');
+            killed++;
+          });
+          KP.killCount = (KP.killCount || 0) + killed;        // each destroyed operator counts
           break;
         }
         case 'bounceTarget': {
           if (!target || target.kind !== 'operator') break;
+          if (hasPassive(target, 'untargetable')) { log(target.name + ' cannot be targeted.'); break; }
           const O = state.players[target.owner];
           const line = target.row === 'back' ? O.back : O.front;
           const idx = line.indexOf(target);
@@ -517,6 +528,7 @@
         case 'buffDefAll': { const P = source ? state.players[source.owner] : activePlayer(); boardUnits(P).forEach(f => { f.defMod += e.v; }); break; }
         // Sleep: standard 1 turn, hard cap 2 turns.
         case 'sleepTarget': if (target) {
+          if (hasPassive(target, 'untargetable')) { log(target.name + ' cannot be targeted.'); break; }
           const st = Math.min(Math.max(e.v || 1, 1), 2);
           target.slept = true;
           target.sleepTurns = Math.max(target.sleepTurns || 0, st);   // a stronger sleep overrides a weaker one
@@ -524,6 +536,7 @@
         } break;
         // Other debuffs (e.g. Silence): standard 2 turns, hard cap 3 turns.
         case 'silenceTarget': if (target) {
+          if (hasPassive(target, 'untargetable')) { log(target.name + ' cannot be targeted.'); break; }
           const st = Math.min(Math.max(e.v || 2, 1), 3);
           target.silenced = true;
           target.silenceTurns = Math.max(target.silenceTurns || 0, st);

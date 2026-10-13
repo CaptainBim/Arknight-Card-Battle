@@ -20,8 +20,14 @@
     return targets;
   }
 
+  // Enemy operators that may legally be chosen as the target of an enemy-
+  // targeting effect. Camouflaged (untargetable) operators are excluded.
+  function targetableEnemies(P) {
+    return enemyTargets(P).filter(u => !E._internal.hasPassive(u, 'untargetable'));
+  }
+
   function bestDestroyTarget(P, maxDef) {
-    const targets = enemyTargets(P).filter(u => maxDef == null || E.unitDef(u) <= maxDef);
+    const targets = targetableEnemies(P).filter(u => maxDef == null || E.unitDef(u) <= maxDef);
     if (!targets.length) return null;
     // value a target by its ATK (threat) then DEF
     return targets.sort((a, b) => (E.unitAtk(b) * 10 + E.unitDef(b)) - (E.unitAtk(a) * 10 + E.unitDef(a)))[0];
@@ -88,7 +94,7 @@
         const eff = r.effects || [];
         const maxDef = (eff.find(e => e.k === 'destroyOperator') || {}).maxDef;
         let t = bestDestroyTarget(P, maxDef);
-        if (!t) t = enemyTargets(P).sort((a, b) => E.unitAtk(b) - E.unitAtk(a))[0] || null;
+        if (!t) t = targetableEnemies(P).sort((a, b) => E.unitAtk(b) - E.unitAtk(a))[0] || null;
         if (t) E.resolveEffects(eff, null, t);
       }
       return (!r || r.ok !== false) ? { done: false, note: note } : null;
@@ -133,10 +139,11 @@
         const needsDestroy = (s.effects || []).some(e => e.k === 'destroyOperator');
         const maxDef = (s.effects.find(e => e.k === 'destroyOperator') || {}).maxDef;
         const needsSleep = (s.effects || []).some(e => e.k === 'sleepTarget');
+        const needsSilence = (s.effects || []).some(e => e.k === 'silenceTarget');
         const needsBounce = (s.effects || []).some(e => e.k === 'bounceTarget');
         if (needsDestroy) { if (E.killLimitReached(P)) continue; target = bestDestroyTarget(P, maxDef); }
-        else if (needsSleep || needsBounce) {
-          const t = enemyTargets(P);
+        else if (needsSleep || needsSilence || needsBounce) {
+          const t = targetableEnemies(P);
           target = t.sort((a, b) => E.unitAtk(b) - E.unitAtk(a))[0] || null;
         }
         if (!target) continue;

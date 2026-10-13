@@ -482,7 +482,11 @@
         setStatus('<b>' + esc(a ? a.name : '') + '</b> — front line is clear! Strike an enemy operator or the enemy Doctor.');
       }
     } else if (S.mode === 'skill' || S.mode === 'artTarget') {
-      document.querySelectorAll('#enemyFront .unit, #enemyBack .unit').forEach(u => u.classList.add('targetable'));
+      document.querySelectorAll('#enemyFront .unit, #enemyBack .unit').forEach(n => {
+        const u = unitByUid(n.dataset.uid);
+        if (u && E._internal.hasPassive(u, 'untargetable')) return;   // Camouflage: cannot be targeted
+        n.classList.add('targetable');
+      });
       setStatus((S.pending && S.pending.label) || 'Choose an enemy operator to target.');
     } else {
       setStatus(isMyTurn() ? 'Your move — play cards, then attack and End Turn.  <kbd>E</kbd> ends turn.' : 'Enemy is thinking…');
@@ -675,7 +679,7 @@
     }
     if (card.kind === 'art' && E.isKillEffects(card.effects) && E.killLimitReached(pl)) {
       S.selHand = -1; render();
-      setStatus('Batas instant-kill tercapai (' + E.KILL_LIMIT + '× per match) — kartu ini sudah tidak bisa dipakai.');
+      setStatus('Batas instant-kill tercapai (maks. ' + E.KILL_LIMIT + ' operator per match) — kartu ini sudah tidak bisa dipakai.');
       return;
     }
     if (S.selHand === index) return cancel();
@@ -702,7 +706,10 @@
     if (S.busy || S.animating) return;
     if (owner !== S.me) {
       if (S.mode === 'attack') { doAttack((attacker) => Cmd.attack(attacker.uid, u.uid)); }
-      else if (S.mode === 'skill' || S.mode === 'artTarget') resolvePendingTarget(u);
+      else if (S.mode === 'skill' || S.mode === 'artTarget') {
+        if (E._internal.hasPassive(u, 'untargetable')) { setStatus('<b>' + esc(u.name) + '</b> cannot be targeted by enemy Arts or abilities.'); return; }
+        resolvePendingTarget(u);
+      }
       else setStatus('<b>' + esc(u.name) + '</b> · ' + u.cls + ' · ATK ' + E.unitAtk(u) + ' / DEF ' + E.unitDef(u) + ' / HP ' + u.hp + '/' + u.maxHp + ' · ' + u.range +
         (u.skill ? ' · 【' + u.skill.type + '】' + esc(u.skill.name) : ''));
       return;
@@ -741,7 +748,7 @@
       if (r && r.ok === false) { setStatus(r.error); return; }
       if (r && r.needsTarget) {
         if (E.isKillSkill(r.needsTarget.skill) && E.killLimitReached(P())) {
-          setStatus('Batas instant-kill tercapai (' + E.KILL_LIMIT + '× per match) — efek ini tidak aktif.');
+          setStatus('Batas instant-kill tercapai (maks. ' + E.KILL_LIMIT + ' operator per match) — efek ini tidak aktif.');
           resetAfterAction(); return;
         }
         S.pending = { effects: r.effects, source: r.needsTarget, label: 'Choose an enemy operator to destroy.' };
@@ -904,7 +911,7 @@
       '<h2>Cards</h2><ul><li><b>Operators</b> — have ATK &amp; DEF; they block enemy attacks <b>from the front row only</b>.</li><li><b>Front row (▲)</b> — any operator. <b>Back row (▼)</b> — ranged operators only (Sniper, Caster, Medic, Supporter); the back row never blocks.</li><li><b>Instant Arts</b> — resolve immediately.</li><li><b>Field Arts</b> — a support zone under your deck/discard, lasts a few turns.</li><li><b>Locations</b> — one per player, permanent; some have an Active ability usable once per turn (costs DP).</li></ul>' +
       '<h2>Attack &amp; blocking</h2><ul><li>Only the <b>front row blocks</b>: while the enemy has any operator awake in the front row, you <b>cannot strike their Doctor</b>. Ranged operators in the back row do <b>not</b> block — clear the enemy front line and the Doctor is exposed.</li><li>A <b>back-row operator</b> can only be attacked once the enemy front line is empty.</li><li>Attacking a Doctor deals damage equal to the attacker\'s ATK (each Doctor has 30 HP).</li><li>Operator vs operator: the attacker deals <b>ATK − (target DEF ÷ 3, rounded down)</b> damage, at least 1, to the target\'s <b>HP</b>. Damage stays between turns; an operator is destroyed at 0 HP.</li><li>Each Operator has <b>15–30 HP</b> (tougher classes and rarer units last longer).</li><li>Heal effects stop at your max HP (30) — a healing card/ability cannot be used while your HP is already full.</li></ul>' +
       '<h2>Arena</h2><ul><li>Every match takes place on a random <b>Arena</b>. Its buff is the game\'s <b>only</b> buff and it is <b>global</b> — it applies to <b>both</b> players automatically (shown on the frontline).</li></ul>' +
-      '<h2>Keywords</h2><ul><li><b>Taunt</b> — must be attacked first.</li><li><b>Sleep</b> — can\'t attack, block, or use its ability, but can still be attacked. Lasts 1 turn (up to 2).</li><li><b>Helidrop</b> — can attack the turn it is played.</li><li><b>Bounce</b> — return a card to hand.</li><li><b>Silence</b> — disables a card ability. Lasts 2 turns (up to 3).</li><li><b>Instant-kill</b> — <b>"Destroy"</b> effects (operator skills <i>and</i> Arts) are capped at <b>3 uses per player per match</b>. After that the option is hidden / marked LIMIT and can no longer be used.</li></ul>' +
+      '<h2>Keywords</h2><ul><li><b>Taunt</b> — must be attacked first.</li><li><b>Sleep</b> — can\'t attack, block, or use its ability, but can still be attacked. Lasts 1 turn (up to 2).</li><li><b>Helidrop</b> — can attack the turn it is played.</li><li><b>Bounce</b> — return a card to hand.</li><li><b>Silence</b> — disables a card ability. Lasts 2 turns (up to 3).</li><li><b>Untargetable</b> — cannot be chosen as the target of enemy Arts or abilities (board-wide area effects and ordinary attacks still hit it).</li><li><b>Instant-kill</b> — <b>"Destroy"</b> effects (operator skills <i>and</i> Arts) destroy at most <b>3 enemy operators per player per match</b>. An area effect spends one of the three for <i>each</i> operator it destroys, so it stops once the allowance runs out. After that the option is hidden / marked LIMIT and can no longer be used.</li></ul>' +
       '<p style="color:#8b96ab">Tip: click your <b>DECK</b> / <b>DISCARD</b> piles to inspect them. <kbd>E</kbd> ends turn · <kbd>Esc</kbd> cancels · <kbd>L</kbd> toggles the log.</p>' +
       '<div class="row-btns"><button id="btnCloseHelp" class="btn primary">Close</button></div>';
     $('overlay').classList.remove('hidden');
