@@ -37,7 +37,9 @@ $chars = [ordered]@{
   'char_4064_mlynar'='mlynar'; 'char_4009_irene'='irene'; 'char_2024_chyue'='chongyue'; 'char_1014_nearl2'='nearl2';
   'char_4039_horn'='horn'; 'char_474_glady'='gladiia'; 'char_430_fartth'='fartooth'; 'char_1013_chen2'='chen2';
   'char_219_meteo'='meteorite'; 'char_4133_logos'='logos'; 'char_1011_lava2'='lava2'; 'char_4042_lumen'='lumen';
-  'char_402_tuye'='tuye'; 'char_2023_ling'='ling'; 'char_1012_skadi2'='skadi2'; 'char_1028_texas2'='texas2'
+  'char_402_tuye'='tuye'; 'char_2023_ling'='ling'; 'char_1012_skadi2'='skadi2'; 'char_1028_texas2'='texas2';
+  # ---- extended roster (batch 4 — discard recovery) ----
+  'char_181_flower'='perfumer'; 'char_110_deepcl'='deepcolor'
 }
 
 function Resize-Png {
@@ -124,7 +126,9 @@ $arts = [ordered]@{
   'skill_icon_skchr_demkni_3.png' ='arts_missilestrike';'skill_icon_skchr_amgoat_2.png'='arts_gravemend';
   'skill_icon_skchr_svrash_2.png' ='arts_warcry';      'skill_icon_skchr_aglina_2.png' ='arts_quickdraw';
   'skill_icon_skchr_aglina_1.png' ='arts_dpburst';     'skill_icon_skchr_gnosis_3.png' ='arts_silencefield';
-  'skill_icon_skchr_mudrok_3.png' ='arts_sweeper';     'skill_icon_skchr_cgbird_2.png' ='arts_laststand'
+  'skill_icon_skchr_mudrok_3.png' ='arts_sweeper';     'skill_icon_skchr_cgbird_2.png' ='arts_laststand';
+  # ---- extended Arts (batch 4 — discard recovery) ----
+  'skill_icon_skchr_skadi_3.png'  ='arts_recovery';    'skill_icon_skchr_kalts_3.png'  ='arts_reclaim'
 }
 foreach ($f in $arts.Keys) {
   $dst = Join-Path $artDir ($arts[$f] + ".png")

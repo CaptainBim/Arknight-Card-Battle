@@ -39,7 +39,10 @@
       case 'sleepTarget': return 'Tidurkan 1 operator musuh selama ' + (e.v || 1) + ' turn (maksimal 2 turn). Operator yang tidur tidak bisa menyerang, tidak bisa jadi penyerang/penahan, skill-nya mati, dan countdown-nya berhenti.';
       case 'silenceTarget': return 'Bungkam (silence) 1 operator musuh selama ' + (e.v || 2) + ' turn (maksimal 3 turn) — skill operator itu jadi nonaktif.';
       case 'returnFromGrave': return 'Ambil 1 operator dari buangan (discard) kembali ke tanganmu.';
-      case 'graveToHand': return 'Ambil ' + (e.v || 1) + ' kartu' + (e.kind && e.kind !== 'any' ? ' tipe ' + e.kind : '') + ' acak dari buangan ke tanganmu.';
+      case 'graveToHand': {
+        const kindLabel = e.kind === 'art' ? ' Arts' : e.kind === 'operator' ? ' operator' : '';
+        return 'Ambil ' + (e.v || 1) + ' kartu' + kindLabel + ' acak dari buangan (discard) ke tanganmu.';
+      }
       case 'shuffleOppHand': return 'Kocok seluruh tangan musuh kembali ke deck' + (e.v != null ? ', lalu musuh menarik ' + e.v + ' kartu' : ', lalu musuh menarik ulang kartu sebanyak yang tadi') + '.';
       case 'shuffleOwnHand': return 'Kocok seluruh tanganmu kembali ke deck, lalu tarik ulang kartu sebanyak tanganmu tadi' + (e.v ? ' + ' + e.v : '') + '.';
       case 'selfDestructEnd': return 'Operator ini hancur sendiri di akhir turn-mu.';

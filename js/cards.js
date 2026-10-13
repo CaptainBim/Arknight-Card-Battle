@@ -292,7 +292,19 @@
       skill:{ name:'Abyssal Dirge', type:'Passive', text:'All friendly operators get +1 ATK.', effects:[{k:'buffAtkAll',v:1}] } },
     { slug:'texas2', name:'Texas the Omertosa', cls:'Specialist', rar:6, atk:7, def:4, cost:6, range:'short', nation:'lungmen',
       skill:{ name:'Sword Rain \u03b2', type:'Instant', text:'When deployed, destroy one enemy operator with DEF 4 or less.',
-              effects:[{k:'destroyOperator',maxDef:4}], needsTarget:true } }
+              effects:[{k:'destroyOperator',maxDef:4}], needsTarget:true } },
+    // ---- extended roster (batch 4 — discard recovery) ----
+    // Recovery is deliberately slow: it costs DP, uses the operator's action for
+    // the turn, and cannot be used the turn it is deployed. Kept weaker than the
+    // existing free once-per-turn recycling so it never becomes a value engine.
+    { slug:'perfumer', name:'Perfumer', cls:'Medic', rar:5, atk:4, def:2, cost:5, range:'medium', nation:'rhodes',
+      skill:{ name:'Fragrant Revival', type:'Active', cost:3,
+              text:'Return 1 operator from your discard pile to your hand, then heal 3 HP to yourself.',
+              effects:[{k:'returnFromGrave'},{k:'healPlayer',v:3}] } },
+    { slug:'deepcolor', name:'Deepcolor', cls:'Supporter', rar:5, atk:4, def:2, cost:5, range:'medium', nation:'egir',
+      skill:{ name:'Tentacle Salvage', type:'Active', cost:2,
+              text:'Return 1 random Arts card from your discard pile to your hand.',
+              effects:[{k:'graveToHand', v:1, kind:'art'}] } }
   ];
 
   // ---------------------------------------------------------------------------
@@ -362,7 +374,12 @@
     { id:'arts_salvage', name:'Salvage Crew', artType:'Instant', cost:3, img:'assets/arts/arts_salvage.png',
       text:'Return 2 random cards from your discard pile to your hand.', effects:[{k:'graveToHand', v:2}] },
     { id:'arts_briefing', name:'Tactical Briefing', artType:'Instant', cost:2, img:'assets/arts/arts_briefing.png',
-      text:'Shuffle your hand into your deck, then draw the same number of cards +1.', effects:[{k:'shuffleOwnHand', v:1}] }
+      text:'Shuffle your hand into your deck, then draw the same number of cards +1.', effects:[{k:'shuffleOwnHand', v:1}] },
+    // ---- extended Arts (batch 4 — discard recovery) ----
+    { id:'arts_recovery', name:'Field Recovery', artType:'Instant', cost:2, img:'assets/arts/arts_recovery.png',
+      text:'Return 1 random card from your discard pile to your hand.', effects:[{k:'graveToHand', v:1}] },
+    { id:'arts_reclaim', name:'Reclamation', artType:'Instant', cost:4, img:'assets/arts/arts_reclaim.png',
+      text:'Return 2 random operators from your discard pile to your hand.', effects:[{k:'graveToHand', v:2, kind:'operator'}] }
   ];
 
   // ---------------------------------------------------------------------------
